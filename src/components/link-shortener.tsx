@@ -1,6 +1,7 @@
 'use client';
 
-import { useFormState, useFormStatus } from 'react-dom';
+import { useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { useEffect, useState, useRef } from 'react';
 import { createShortLinkAction, type ShortLinkState } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
@@ -26,7 +27,7 @@ function SubmitButton() {
 }
 
 export function LinkShortener() {
-  const [state, formAction] = useFormState(createShortLinkAction, initialState);
+  const [state, formAction] = useActionState(createShortLinkAction, initialState);
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
