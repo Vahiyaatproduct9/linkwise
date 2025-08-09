@@ -4,6 +4,10 @@
 /node_modules
 /.pnp
 .pnp.js
+*/node_modules
+
+#envs
+
 
 # Testing
 /coverage
@@ -28,6 +32,7 @@ pnpm-debug.log*
 # Local .env file
 .env
 .env*.local
+**/.env*
 
 # Editor directories and files
 .vscode
