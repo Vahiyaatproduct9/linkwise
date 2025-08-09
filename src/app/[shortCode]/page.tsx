@@ -4,37 +4,48 @@ import Link from '@/models/link';
 
 interface Params {
   params: {
-    shortCode: string;
+    // accept either camelCase or lowercase param keys
+    shortCode?: string;
+    shortcode?: string;
   };
 }
 
-export default async function ShortLinkPage({ params }: Params) {
-  const { shortCode } = params;
+function ensureProtocol(url: string) {
+  if (!/^https?:\/\//i.test(url)) {
+    return 'https://' + url;
+  }
+  return url;
+}
 
-  if (!shortCode || typeof shortCode !== 'string') {
+export default async function ShortLinkPage({ params }: Params) {
+  // try both possible param names, so folder name case doesn't break it
+  const shortCode = params.shortCode ?? params.shortcode;
+
+  if (!shortCode) {
+    console.warn('No shortcode param provided', params);
     return redirect('/');
   }
 
   try {
     await dbConnect();
-    
-    // Find the link by shortCode
-    const link = await Link.findOne({ shortCode: decodeURIComponent(shortCode) });
 
-    if (link) {
-      // Increment the visit count and save
-      link.visitCount += 1;
+    // adjust this query if your DB field name is different (short_code / shortcode)
+    const link = await Link.findOne({ shortCode });
+
+    if (link && link.longUrl) {
+      // increment visit count safely (handle undefined)
+      link.visitCount = (link.visitCount ?? 0) + 1;
       await link.save();
+
+      const target = ensureProtocol(link.longUrl);
       
-      // Redirect to the original long URL
-      return redirect(link.longUrl);
+      return redirect(target);
     } else {
-      // If the link is not found, redirect to a 'not found' error page
+      console.warn('Shortcode not found in DB:', shortCode);
       return redirect('/?error=notfound');
     }
   } catch (error) {
     console.error('Error handling short link:', error);
-    // If any other server error occurs, redirect to a generic server error page
     return redirect('/?error=servererror');
   }
 }
