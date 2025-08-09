@@ -4,15 +4,11 @@
 /node_modules
 /.pnp
 .pnp.js
-*/node_modules
-
-#envs
-
 
 # Testing
 /coverage
 
-# Next.js
+# Next.js build output
 /.next/
 /out/
 
@@ -29,16 +25,17 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-# Local .env file
+# Local .env files
 .env
-.env*.local
-**/.env*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
-# Editor directories and files
-.vscode
-.idea
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+# Turborepo
+.turbo
+
+# Bun
+.bun
+# bun-create-next-app
+bun.lockb
