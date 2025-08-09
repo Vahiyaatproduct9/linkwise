@@ -35,15 +35,13 @@ export async function createShortLinkAction(
   }
   
   const { longUrl } = validatedFields.data;
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://linkwise-sage.vercel.app';
 
   try {
-    // Connect to the database
     await dbConnect();
 
-    // Check if the link already exists
     const existingLink = await Link.findOne({ longUrl });
     if (existingLink) {
-        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://linkwise-sage.vercel.app';
         const shortUrl = `${baseUrl}/${existingLink.shortCode}`;
         return {
             status: 'success',
@@ -53,20 +51,38 @@ export async function createShortLinkAction(
         };
     }
 
-    // If it doesn't exist, generate a new short code
-    const result = await generateShortLink({ longUrl });
-    const { shortCode } = result;
-    
-    // Save the new link to the database
+    let shortCode = '';
+    let isUnique = false;
+    let attempts = 0;
+    const maxAttempts = 5;
+
+    while (!isUnique && attempts < maxAttempts) {
+      const result = await generateShortLink({ longUrl });
+      const generatedCode = result.shortCode;
+      
+      const existingCode = await Link.findOne({ shortCode: generatedCode });
+      if (!existingCode) {
+        shortCode = generatedCode;
+        isUnique = true;
+      }
+      attempts++;
+    }
+
+    if (!isUnique) {
+      return {
+        status: 'error',
+        message: 'Failed to generate a unique short link. Please try again.',
+        longUrl: longUrl,
+      };
+    }
+
     const newLink = new Link({
       longUrl,
       shortCode,
       visitCount: 0,
     });
     await newLink.save();
-
-    // Construct the full short URL
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://linkwise-sage.vercel.app';
+    
     const shortUrl = `${baseUrl}/${shortCode}`;
 
     return {
