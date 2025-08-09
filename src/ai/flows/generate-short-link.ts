@@ -18,7 +18,7 @@ const GenerateShortLinkInputSchema = z.object({
 export type GenerateShortLinkInput = z.infer<typeof GenerateShortLinkInputSchema>;
 
 const GenerateShortLinkOutputSchema = z.object({
-  shortUrl: z.string().describe('The generated short URL.'),
+  shortCode: z.string().describe('A unique, 6-character alphanumeric code.'),
 });
 export type GenerateShortLinkOutput = z.infer<typeof GenerateShortLinkOutputSchema>;
 
@@ -30,11 +30,11 @@ const generateShortLinkPrompt = ai.definePrompt({
   name: 'generateShortLinkPrompt',
   input: {schema: GenerateShortLinkInputSchema},
   output: {schema: GenerateShortLinkOutputSchema},
-  prompt: `You are a URL shortening service. Given a long URL, your task is to generate a short, unique, and memorable short URL.
+  prompt: `You are a URL shortening service. Given a long URL, your task is to generate a short, unique, 6-character alphanumeric code.
 
   Long URL: {{{longUrl}}}
 
-  Short URL:`,
+  Short Code:`,
 });
 
 const generateShortLinkFlow = ai.defineFlow(
@@ -44,6 +44,7 @@ const generateShortLinkFlow = ai.defineFlow(
     outputSchema: GenerateShortLinkOutputSchema,
   },
   async input => {
+    // In a real app, you would also check for collisions here
     const {output} = await generateShortLinkPrompt(input);
     return output!;
   }

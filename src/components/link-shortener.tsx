@@ -35,7 +35,7 @@ export function LinkShortener() {
     if (state.status === 'success' && state.message) {
       toast({
         title: 'Success!',
-        description: 'Your demonstrative short link is ready.',
+        description: state.message,
       });
       formRef.current?.reset();
     } else if (state.status === 'error' && state.message) {
@@ -65,8 +65,6 @@ export function LinkShortener() {
         <CardTitle className="text-3xl font-headline tracking-tight">Make Your Links Wiser</CardTitle>
         <CardDescription>
           Paste your long URL below to generate a short and wise link. Powered by AI.
-          <br />
-          <span className="text-xs italic">(This is a prototype, links are not active.)</span>
         </CardDescription>
       </CardHeader>
       <form action={formAction} ref={formRef}>

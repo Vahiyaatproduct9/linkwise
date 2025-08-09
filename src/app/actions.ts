@@ -2,6 +2,8 @@
 
 import { z } from 'zod';
 import { generateShortLink } from '@/ai/flows/generate-short-link';
+import dbConnect from '@/lib/db-connect';
+import Link from '@/models/link';
 
 const FormSchema = z.object({
   longUrl: z.string().url({ message: 'Please enter a valid URL starting with http:// or https://' }),
@@ -35,11 +37,37 @@ export async function createShortLinkAction(
   const { longUrl } = validatedFields.data;
 
   try {
+    // Connect to the database
+    await dbConnect();
+
+    // Check if the link already exists
+    const existingLink = await Link.findOne({ longUrl });
+    if (existingLink) {
+        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002';
+        const shortUrl = `${baseUrl}/${existingLink.shortCode}`;
+        return {
+            status: 'success',
+            message: 'This link has already been shortened!',
+            shortUrl: shortUrl,
+            longUrl: longUrl,
+        };
+    }
+
+    // If it doesn't exist, generate a new short code
     const result = await generateShortLink({ longUrl });
+    const { shortCode } = result;
     
-    // In a real app, you'd use your actual domain.
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://your-domain.com';
-    const shortUrl = `${baseUrl}/${result.shortUrl}`;
+    // Save the new link to the database
+    const newLink = new Link({
+      longUrl,
+      shortCode,
+      visitCount: 0,
+    });
+    await newLink.save();
+
+    // Construct the full short URL
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002';
+    const shortUrl = `${baseUrl}/${shortCode}`;
 
     return {
       status: 'success',
@@ -49,9 +77,10 @@ export async function createShortLinkAction(
     };
   } catch (e) {
     const errorMessage = e instanceof Error ? e.message : 'An unexpected error occurred.';
+    console.error('Action Error:', errorMessage);
     return {
       status: 'error',
-      message: `Failed to generate link: ${errorMessage}`,
+      message: `Failed to generate link. Please try again.`,
       longUrl: longUrl,
     };
   }
