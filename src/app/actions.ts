@@ -38,7 +38,7 @@ export async function createShortLinkAction(
     const result = await generateShortLink({ longUrl });
     
     // In a real app, you'd use your actual domain.
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://w.ise';
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://your-domain.com';
     const shortUrl = `${baseUrl}/${result.shortUrl}`;
 
     return {
