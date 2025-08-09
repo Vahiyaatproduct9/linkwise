@@ -43,7 +43,7 @@ export async function createShortLinkAction(
     // Check if the link already exists
     const existingLink = await Link.findOne({ longUrl });
     if (existingLink) {
-        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002';
+        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://linkwise-sage.vercel.app';
         const shortUrl = `${baseUrl}/${existingLink.shortCode}`;
         return {
             status: 'success',
@@ -66,7 +66,7 @@ export async function createShortLinkAction(
     await newLink.save();
 
     // Construct the full short URL
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002';
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://linkwise-sage.vercel.app';
     const shortUrl = `${baseUrl}/${shortCode}`;
 
     return {
